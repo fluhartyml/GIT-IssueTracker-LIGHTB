@@ -29,9 +29,33 @@
 		C0E805482EAE742000190304 /* GIT IssueTracker LIGHTUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "GIT IssueTracker LIGHTUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		C0E805922EAE7DAA00190304 /* Exceptions for "GIT IssueTracker LIGHT" folder in "Copy Bundle Resources" phase from "GIT IssueTracker LIGHT" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = C0E8052F2EAE741F00190304 /* Resources */;
+			membershipExceptions = (
+				Features/Comments/CommentsView.swift,
+				Features/Debug/DebugPanel.swift,
+				Features/Issues/AllIssuesView.swift,
+				Features/Issues/CreateIssueView.swift,
+				Features/Issues/IssueDetailView.swift,
+				Features/Issues/IssueNavigatorView.swift,
+				Features/Repositories/RepositoryDetailView.swift,
+				Features/Repositories/RepositoryListView.swift,
+				Features/Wiki/WikiEditorView.swift,
+				Features/Wiki/WikiListView.swift,
+				Features/Wiki/WikiPageView.swift,
+				Features/Wiki/WikiView.swift,
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		C0E805332EAE741F00190304 /* GIT IssueTracker LIGHT */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				C0E805922EAE7DAA00190304 /* Exceptions for "GIT IssueTracker LIGHT" folder in "Copy Bundle Resources" phase from "GIT IssueTracker LIGHT" target */,
+			);
 			path = "GIT IssueTracker LIGHT";
 			sourceTree = "<group>";
 		};

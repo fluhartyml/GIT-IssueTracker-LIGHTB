@@ -134,38 +134,86 @@ struct DebugPanel: View {
         if let lastSync = lastSyncTime {
             let timeAgoText = timeAgo(from: lastSync)
             messages.append("Last sync \(timeAgoText.lowercased())")
+        } else {
+            messages.append("Awaiting first sync")
         }
         
-        // Context-aware messages
+        // Context-aware messages based on selected tab
         switch selectedTab {
         case .repos:
-            messages.append("Tracking \(repositoryCount) repositories")
+            messages.append("REPOS TAB ACTIVE")
+            if repositoryCount > 0 {
+                messages.append("Tracking \(repositoryCount) repositories")
+            } else {
+                messages.append("No repositories loaded yet")
+            }
+            
             if let repo = selectedRepository {
                 messages.append("Viewing \(repo.name)")
+                messages.append("Repository \(repo.fullName)")
+            } else {
+                messages.append("Select a repository to explore")
             }
-            messages.append("\(issueCount) issues across all repos")
+            
+            if issueCount > 0 {
+                messages.append("\(issueCount) issues across all repos")
+            }
             
         case .issues:
-            messages.append("Monitoring \(issueCount) total issues")
-            messages.append("Across \(repositoryCount) repositories")
+            messages.append("ISSUES TAB ACTIVE")
+            if issueCount > 0 {
+                messages.append("Monitoring \(issueCount) total issues")
+            } else {
+                messages.append("No issues found")
+            }
+            
+            if repositoryCount > 0 {
+                messages.append("Across \(repositoryCount) repositories")
+            }
+            
+            let avgIssuesPerRepo = repositoryCount > 0 ? Double(issueCount) / Double(repositoryCount) : 0.0
+            if avgIssuesPerRepo > 0 {
+                messages.append("Average \(String(format: "%.1f", avgIssuesPerRepo)) issues per repo")
+            }
             
         case .wiki:
-            let wikisAvailable = repositoryCount // This would be actual count in real implementation
-            messages.append("\(wikisAvailable) wikis available")
+            messages.append("WIKI TAB ACTIVE")
+            if repositoryCount > 0 {
+                messages.append("\(repositoryCount) repositories available")
+            }
+            
             if let repo = selectedWikiRepository {
                 messages.append("Exploring \(repo.name) wiki")
+                if repo.hasWiki == true {
+                    messages.append("Wiki is enabled for this repo")
+                } else {
+                    messages.append("Wiki not available for this repo")
+                }
+            } else {
+                messages.append("Select a repository to view wiki")
             }
         }
         
         // API status
         if let remaining = rateLimitRemaining, let total = rateLimitTotal {
             let percentage = Int((Double(remaining) / Double(total)) * 100)
-            messages.append("API quota at \(percentage)%")
+            messages.append("API quota at \(percentage) percent")
+            
+            if percentage < 20 {
+                messages.append("Warning API quota running low")
+            }
         }
         
         // Performance
         if let duration = lastApiCallDuration {
-            messages.append("Response time \(Int(duration * 1000))ms")
+            let ms = Int(duration * 1000)
+            messages.append("Response time \(ms) milliseconds")
+            
+            if ms < 500 {
+                messages.append("Blazing fast connection")
+            } else if ms > 2000 {
+                messages.append("Network experiencing delays")
+            }
         }
         
         return messages

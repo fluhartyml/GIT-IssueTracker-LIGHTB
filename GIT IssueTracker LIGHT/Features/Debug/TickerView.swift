@@ -9,12 +9,12 @@ import SwiftUI
 
 struct TickerView: View {
     let messages: [String]
+    
     @State private var currentMessageIndex = 0
     @State private var firstWordProgress: CGFloat = 0
     @State private var firstWordLetters: [Character] = []
     @State private var restOfMessage = ""
     @State private var scrollOffset: CGFloat = 0
-    @State private var isAnimating = false
     
     private let tickerHeight: CGFloat = 20
     private let scrollSpeed: TimeInterval = 0.03 // Speed per character
@@ -46,6 +46,19 @@ struct TickerView: View {
             .clipped()
         }
         .frame(height: tickerHeight)
+        .onChange(of: messages) { oldMessages, newMessages in
+            // Completely restart ticker when messages change
+            currentMessageIndex = 0
+            firstWordProgress = 0
+            firstWordLetters = []
+            restOfMessage = ""
+            scrollOffset = 0
+            
+            // Small delay to ensure state is reset
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                startTicker()
+            }
+        }
         .onAppear {
             startTicker()
         }
@@ -57,6 +70,7 @@ struct TickerView: View {
     }
     
     private func animateMessage() {
+        guard !messages.isEmpty else { return }
         guard currentMessageIndex < messages.count else {
             currentMessageIndex = 0
             animateMessage()
@@ -115,11 +129,13 @@ struct TickerView: View {
 }
 
 #Preview {
-    TickerView(messages: [
-        "Loading repositories...",
-        "Fetched 26 repos in 633ms",
-        "All systems operational"
-    ])
+    TickerView(
+        messages: [
+            "Loading repositories...",
+            "Fetched 26 repos in 633ms",
+            "All systems operational"
+        ]
+    )
     .frame(height: 20)
     .background(Color(nsColor: .controlBackgroundColor))
 }

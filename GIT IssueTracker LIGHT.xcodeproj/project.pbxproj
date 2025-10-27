@@ -44,7 +44,6 @@
 				Features/Repositories/RepositoryListView.swift,
 				Features/Wiki/WikiEditorView.swift,
 				Features/Wiki/WikiListView.swift,
-				Features/Wiki/WikiPageView.swift,
 				Features/Wiki/WikiViewA.swift,
 				Features/Wiki/WikiViewB.swift,
 			);

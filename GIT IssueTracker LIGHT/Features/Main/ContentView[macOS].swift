@@ -138,7 +138,14 @@ struct ContentView: View {
             Text(errorMessage ?? "")
         }
         .task {
+            // Initialize GitHubService
             gitHubService = GitHubService(configManager: configManager)
+            
+            // Initialize WikiModel with credentials immediately
+            wikiModel.githubToken = configManager.config.github.token
+            wikiModel.githubUsername = configManager.config.github.username
+            
+            // Fetch data if credentials exist
             if !configManager.config.github.token.isEmpty {
                 await fetchData()
             }

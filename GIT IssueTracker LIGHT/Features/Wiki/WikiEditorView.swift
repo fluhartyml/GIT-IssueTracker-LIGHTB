@@ -2,14 +2,14 @@
 //  WikiEditorView.swift
 //  GIT IssueTracker LIGHT
 //
+//  Created on 2025-10-27
 //  Live Markdown editor with keystroke-level auto-save
 //
 
 import SwiftUI
 
 struct WikiEditorView: View {
-    @Binding var content: String
-    @ObservedObject var viewModel: WikiModel
+    @Bindable var viewModel: WikiModel
     @FocusState private var isFocused: Bool
     
     var body: some View {
@@ -45,10 +45,10 @@ struct WikiEditorView: View {
             Divider()
             
             // Text editor
-            TextEditor(text: $content)
+            TextEditor(text: $viewModel.editingContent)
                 .font(.system(.body, design: .monospaced))
                 .focused($isFocused)
-                .onChange(of: content) { _, newValue in
+                .onChange(of: viewModel.editingContent) { _, newValue in
                     viewModel.autoSaveLocal(newValue)
                 }
                 .padding()

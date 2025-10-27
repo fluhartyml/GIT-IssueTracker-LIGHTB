@@ -2,13 +2,14 @@
 //  WikiViewB.swift
 //  GIT IssueTracker LIGHT
 //
+//  Created on 2025-10-27
 //  Panel B wiki navigation - hierarchical repo/page/asset structure
 //
 
 import SwiftUI
 
 struct WikiViewB: View {
-    @ObservedObject var viewModel: WikiModel
+    @Bindable var viewModel: WikiModel
     @Binding var selectedRepo: Repository?
     @State private var expandedRepos = Set<Int>()
     
@@ -71,7 +72,7 @@ struct WikiViewB: View {
                 FormatButton(symbol: "link", label: "Link", markdown: "[text](url)", viewModel: viewModel)
                 FormatButton(symbol: "number", label: "Heading", markdown: "## ", viewModel: viewModel)
                 FormatButton(symbol: "list.bullet", label: "List", markdown: "- ", viewModel: viewModel)
-                FormatButton(symbol: "code.quote", label: "Code", markdown: "`code`", viewModel: viewModel)
+                FormatButton(symbol: "chevron.left.forwardslash.chevron.right", label: "Code", markdown: "`code`", viewModel: viewModel)
             }
             
             Divider()
@@ -119,10 +120,9 @@ struct WikiViewB: View {
     }
 }
 
-// Separate row component to simplify type checking
 struct RepoDisclosureRow: View {
     let repo: Repository
-    @ObservedObject var viewModel: WikiModel
+    @Bindable var viewModel: WikiModel
     @Binding var selectedRepo: Repository?
     @Binding var expandedRepos: Set<Int>
     
@@ -163,10 +163,9 @@ struct RepoDisclosureRow: View {
     }
 }
 
-// Repository content view
 struct RepoContentView: View {
     let repo: Repository
-    @ObservedObject var viewModel: WikiModel
+    @Bindable var viewModel: WikiModel
     let selectedRepo: Repository?
     
     private var isCurrentRepo: Bool {
@@ -190,7 +189,6 @@ struct RepoContentView: View {
     }
 }
 
-// Loading indicator
 struct LoadingView: View {
     var body: some View {
         HStack {
@@ -205,9 +203,8 @@ struct LoadingView: View {
     }
 }
 
-// Wiki pages list
 struct WikiPagesListView: View {
-    @ObservedObject var viewModel: WikiModel
+    @Bindable var viewModel: WikiModel
     
     var body: some View {
         ForEach(viewModel.wikiPages) { page in
@@ -234,9 +231,8 @@ struct WikiPagesListView: View {
     }
 }
 
-// Assets list
 struct AssetsListView: View {
-    @ObservedObject var viewModel: WikiModel
+    @Bindable var viewModel: WikiModel
     
     var body: some View {
         Group {
@@ -266,9 +262,8 @@ struct AssetsListView: View {
     }
 }
 
-// Create first page button
 struct CreateFirstPageButton: View {
-    @ObservedObject var viewModel: WikiModel
+    @Bindable var viewModel: WikiModel
     
     var body: some View {
         Button(action: {
@@ -286,12 +281,11 @@ struct CreateFirstPageButton: View {
     }
 }
 
-// Formatting button helper
 struct FormatButton: View {
     let symbol: String
     let label: String
     let markdown: String
-    @ObservedObject var viewModel: WikiModel
+    @Bindable var viewModel: WikiModel
     
     var body: some View {
         Button(action: {

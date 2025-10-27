@@ -15,6 +15,7 @@ struct ContentView: View {
     @State private var allIssues: [Issue] = []
     @State private var selectedRepository: Repository?
     @State private var selectedIssue: Issue?
+    @State private var selectedWikiRepository: Repository?
     
     @State private var selectedTab: NavigationTab = .repos
     @State private var navigationStack: [NavigationState] = []
@@ -73,7 +74,10 @@ struct ContentView: View {
                             onIssueSelected: navigateToIssue
                         )
                     case .wiki:
-                        WikiView(repositories: repositories)
+                        WikiViewB(
+                            repositories: repositories,
+                            selectedRepository: $selectedWikiRepository
+                        )
                     }
                 }
                 .navigationTitle("GIT IssueTracker Light")
@@ -110,6 +114,7 @@ struct ContentView: View {
             if showDebugPanel {
                 DebugPanel(
                     showDebugPanel: $showDebugPanel,
+                    selectedTab: selectedTab,
                     apiCallsInProgress: apiCallsInProgress,
                     lastSyncTime: lastSyncTime,
                     rateLimitRemaining: rateLimitRemaining,
@@ -117,6 +122,8 @@ struct ContentView: View {
                     lastApiCallDuration: lastApiCallDuration,
                     repositoryCount: repositories.count,
                     issueCount: allIssues.count,
+                    selectedRepository: selectedRepository,
+                    selectedWikiRepository: selectedWikiRepository,
                     errorLog: $errorLog
                 )
             }
@@ -142,7 +149,7 @@ struct ContentView: View {
     @ViewBuilder
     private var paneAContent: some View {
         if selectedTab == .wiki {
-            WikiView(repositories: repositories)
+            WikiViewA(repository: selectedWikiRepository, configManager: configManager)
         } else if let issue = selectedIssue, let repo = repositories.first(where: { $0.name == issue.repositoryName }) {
             IssueDetailView(
                 issue: issue,
@@ -269,3 +276,4 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
+

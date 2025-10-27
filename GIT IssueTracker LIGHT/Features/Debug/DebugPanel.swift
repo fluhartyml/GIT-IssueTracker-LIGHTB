@@ -9,6 +9,7 @@ import SwiftUI
 
 struct DebugPanel: View {
     @Binding var showDebugPanel: Bool
+    let selectedTab: ContentView.NavigationTab
     let apiCallsInProgress: Int
     let lastSyncTime: Date?
     let rateLimitRemaining: Int?
@@ -16,6 +17,8 @@ struct DebugPanel: View {
     let lastApiCallDuration: TimeInterval?
     let repositoryCount: Int
     let issueCount: Int
+    let selectedRepository: Repository?
+    let selectedWikiRepository: Repository?
     @Binding var errorLog: [DebugError]
     
     var body: some View {
@@ -93,22 +96,8 @@ struct DebugPanel: View {
                 Divider()
                     .frame(height: 12)
                 
-                // DATA COUNTS
-                HStack(spacing: 4) {
-                    Image(systemName: "folder")
-                        .font(.system(size: 10))
-                        .foregroundStyle(.blue)
-                    Text("\(repositoryCount)")
-                        .font(.system(size: 10, design: .monospaced))
-                        .foregroundStyle(.secondary)
-                    
-                    Image(systemName: "exclamationmark.circle")
-                        .font(.system(size: 10))
-                        .foregroundStyle(.red)
-                    Text("\(issueCount)")
-                        .font(.system(size: 10, design: .monospaced))
-                        .foregroundStyle(.secondary)
-                }
+                // CONTEXT-AWARE DATA COUNTS
+                contextualMetrics
                 
                 Divider()
                     .frame(height: 12)
@@ -143,6 +132,70 @@ struct DebugPanel: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
             .background(Color(nsColor: .controlBackgroundColor))
+        }
+    }
+    
+    // MARK: - Context-Aware Metrics
+    
+    @ViewBuilder
+    private var contextualMetrics: some View {
+        switch selectedTab {
+        case .repos:
+            HStack(spacing: 4) {
+                Image(systemName: "folder")
+                    .font(.system(size: 10))
+                    .foregroundStyle(.blue)
+                Text("\(repositoryCount)")
+                    .font(.system(size: 10, design: .monospaced))
+                    .foregroundStyle(.secondary)
+                
+                if let repo = selectedRepository {
+                    Image(systemName: "arrow.right")
+                        .font(.system(size: 8))
+                        .foregroundStyle(.secondary)
+                    Text(repo.name.prefix(15))
+                        .font(.system(size: 10, design: .monospaced))
+                        .foregroundStyle(.blue)
+                        .lineLimit(1)
+                }
+            }
+            
+        case .issues:
+            HStack(spacing: 4) {
+                Image(systemName: "exclamationmark.circle")
+                    .font(.system(size: 10))
+                    .foregroundStyle(.red)
+                Text("\(issueCount)")
+                    .font(.system(size: 10, design: .monospaced))
+                    .foregroundStyle(.secondary)
+                
+                Image(systemName: "folder")
+                    .font(.system(size: 10))
+                    .foregroundStyle(.blue)
+                Text("\(repositoryCount)")
+                    .font(.system(size: 10, design: .monospaced))
+                    .foregroundStyle(.secondary)
+            }
+            
+        case .wiki:
+            HStack(spacing: 4) {
+                Image(systemName: "book.closed")
+                    .font(.system(size: 10))
+                    .foregroundStyle(.green)
+                Text("\(repositoryCount)")
+                    .font(.system(size: 10, design: .monospaced))
+                    .foregroundStyle(.secondary)
+                
+                if let repo = selectedWikiRepository {
+                    Image(systemName: "arrow.right")
+                        .font(.system(size: 8))
+                        .foregroundStyle(.secondary)
+                    Text(repo.name.prefix(15))
+                        .font(.system(size: 10, design: .monospaced))
+                        .foregroundStyle(.green)
+                        .lineLimit(1)
+                }
+            }
         }
     }
     
@@ -190,3 +243,4 @@ struct DebugPanel: View {
         }
     }
 }
+

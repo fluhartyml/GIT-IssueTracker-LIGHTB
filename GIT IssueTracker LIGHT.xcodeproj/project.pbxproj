@@ -45,7 +45,8 @@
 				Features/Wiki/WikiEditorView.swift,
 				Features/Wiki/WikiListView.swift,
 				Features/Wiki/WikiPageView.swift,
-				Features/Wiki/WikiView.swift,
+				Features/Wiki/WikiViewA.swift,
+				Features/Wiki/WikiViewB.swift,
 			);
 		};
 /* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */

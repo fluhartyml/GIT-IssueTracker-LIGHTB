@@ -1,73 +1,35 @@
 //
-//  WikiView.swift
+//  WikiViewA.swift
 //  GIT IssueTracker Light
 //
-//  Main wiki interface view
+//  Wiki detail view for Panel A (main area)
 //
 
 import SwiftUI
 
-struct WikiView: View {
-    let repositories: [Repository]
+struct WikiViewA: View {
+    let repository: Repository?
     let configManager: ConfigManager
     
-    @State private var selectedRepository: Repository?
     @State private var wikiService: WikiService
     @State private var wikiInfo: WikiInfo?
     @State private var isLoading = false
     
-    init(repositories: [Repository], configManager: ConfigManager) {
-        self.repositories = repositories
+    init(repository: Repository?, configManager: ConfigManager) {
+        self.repository = repository
         self.configManager = configManager
         _wikiService = State(initialValue: WikiService(configManager: configManager))
     }
     
     var body: some View {
-        NavigationSplitView {
-            // SIDEBAR: Repository list for wiki
-            wikiRepositoryList
-        } detail: {
-            // MAIN AREA: Wiki content
-            if let repo = selectedRepository {
+        Group {
+            if let repo = repository {
                 wikiDetailView(for: repo)
             } else {
                 wikiPlaceholder
             }
         }
-    }
-    
-    // MARK: - Repository List
-    
-    private var wikiRepositoryList: some View {
-        List(repositories, id: \.id, selection: $selectedRepository) { repo in
-            Button(action: {
-                selectedRepository = repo
-                Task {
-                    await loadWikiInfo(for: repo)
-                }
-            }) {
-                HStack {
-                    Image(systemName: "folder.fill")
-                        .foregroundStyle(.blue)
-                    
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(repo.name)
-                            .font(.headline)
-                        
-                        if repo.hasWiki == true {
-                            Label("Wiki Available", systemImage: "book.closed.fill")
-                                .font(.caption2)
-                                .foregroundStyle(.green)
-                        } else {
-                            Label("No Wiki", systemImage: "book.closed")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                }
-            }
-            .buttonStyle(.plain)
-        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
     // MARK: - Wiki Detail View
@@ -82,8 +44,7 @@ struct WikiView: View {
                 wikiNotAvailableView(repository: repository)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .task {
+        .task(id: repository.id) {
             await loadWikiInfo(for: repository)
         }
     }
@@ -240,6 +201,5 @@ struct WikiView: View {
 }
 
 #Preview {
-    WikiView(repositories: [], configManager: ConfigManager())
+    WikiViewA(repository: nil, configManager: ConfigManager())
 }
-

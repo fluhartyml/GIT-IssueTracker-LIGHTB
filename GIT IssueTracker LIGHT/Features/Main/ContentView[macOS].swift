@@ -10,6 +10,7 @@ import SwiftUI
 struct ContentView: View {
     @State private var configManager = ConfigManager()
     @State private var gitHubService: GitHubService?
+    @State private var wikiModel = WikiModel()
     
     @State private var repositories: [Repository] = []
     @State private var allIssues: [Issue] = []
@@ -75,8 +76,8 @@ struct ContentView: View {
                         )
                     case .wiki:
                         WikiViewB(
-                            repositories: repositories,
-                            selectedRepository: $selectedWikiRepository
+                            viewModel: wikiModel,
+                            selectedRepo: $selectedWikiRepository
                         )
                     }
                 }
@@ -149,7 +150,7 @@ struct ContentView: View {
     @ViewBuilder
     private var paneAContent: some View {
         if selectedTab == .wiki {
-            WikiViewA(repository: selectedWikiRepository, configManager: configManager)
+            WikiViewA(viewModel: wikiModel)
         } else if let issue = selectedIssue, let repo = repositories.first(where: { $0.name == issue.repositoryName }) {
             IssueDetailView(
                 issue: issue,
@@ -252,6 +253,11 @@ struct ContentView: View {
         
         do {
             repositories = try await service.fetchRepositories()
+            
+            // Update wiki model with repositories
+            wikiModel.repositories = repositories
+            wikiModel.githubToken = configManager.config.github.token
+            wikiModel.githubUsername = configManager.config.github.username
             
             isLoadingIssues = true
             allIssues = try await service.fetchAllIssues(from: repositories)

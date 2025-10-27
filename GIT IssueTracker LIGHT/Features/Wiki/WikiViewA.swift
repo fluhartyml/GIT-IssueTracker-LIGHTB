@@ -1,205 +1,147 @@
 //
 //  WikiViewA.swift
-//  GIT IssueTracker Light
+//  GIT IssueTracker LIGHT
 //
-//  Wiki detail view for Panel A (main area)
+//  Panel A wiki display - reading and editing modes
 //
 
 import SwiftUI
 
 struct WikiViewA: View {
-    let repository: Repository?
-    let configManager: ConfigManager
-    
-    @State private var wikiService: WikiService
-    @State private var wikiInfo: WikiInfo?
-    @State private var isLoading = false
-    
-    init(repository: Repository?, configManager: ConfigManager) {
-        self.repository = repository
-        self.configManager = configManager
-        _wikiService = State(initialValue: WikiService(configManager: configManager))
-    }
+    @ObservedObject var viewModel: WikiModel
+    @State private var isEditing = false
     
     var body: some View {
-        Group {
-            if let repo = repository {
-                wikiDetailView(for: repo)
+        VStack(spacing: 0) {
+            if isEditing {
+                // EDITING MODE
+                WikiEditorView(
+                    content: $viewModel.editingContent,
+                    viewModel: viewModel
+                )
             } else {
-                wikiPlaceholder
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-    
-    // MARK: - Wiki Detail View
-    
-    private func wikiDetailView(for repository: Repository) -> some View {
-        VStack(spacing: 20) {
-            if isLoading {
-                ProgressView("Loading wiki info...")
-            } else if let info = wikiInfo, info.isAvailable {
-                wikiAvailableView(repository: repository, info: info)
-            } else {
-                wikiNotAvailableView(repository: repository)
-            }
-        }
-        .task(id: repository.id) {
-            await loadWikiInfo(for: repository)
-        }
-    }
-    
-    // MARK: - Wiki Available View
-    
-    private func wikiAvailableView(repository: Repository, info: WikiInfo) -> some View {
-        VStack(spacing: 30) {
-            // Header
-            VStack(spacing: 12) {
-                Image(systemName: "book.closed.fill")
-                    .font(.system(size: 64))
-                    .foregroundStyle(.blue)
-                
-                Text("\(repository.name) Wiki")
-                    .font(.title)
-                    .bold()
-                
-                Text("This repository has a wiki available")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-            
-            Divider()
-                .frame(maxWidth: 400)
-            
-            // Info box
-            VStack(alignment: .leading, spacing: 16) {
-                HStack {
-                    Image(systemName: "info.circle.fill")
-                        .foregroundStyle(.blue)
-                    Text("GitHub Wiki Access")
-                        .font(.headline)
-                }
-                
-                Text("GitHub wikis are stored as separate Git repositories. To view and edit wiki content, you can:")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-                
-                VStack(alignment: .leading, spacing: 8) {
-                    Label("View wiki in your browser", systemImage: "safari")
-                    Label("Clone the wiki repository", systemImage: "arrow.down.circle")
-                    Label("Edit pages on GitHub.com", systemImage: "pencil")
-                }
-                .font(.caption)
-                .padding(.leading, 8)
-            }
-            .padding()
-            .background(Color(nsColor: .controlBackgroundColor))
-            .cornerRadius(8)
-            .frame(maxWidth: 500)
-            
-            // Action buttons
-            VStack(spacing: 12) {
-                Button(action: {
-                    wikiService.openWikiInBrowser(for: repository)
-                }) {
-                    Label("Open Wiki in Browser", systemImage: "safari")
-                        .frame(maxWidth: 300)
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                
-                if let wikiUrl = info.wikiUrl {
-                    Button(action: {
-                        let cloneUrl = wikiUrl + ".git"
-                        NSPasteboard.general.clearContents()
-                        NSPasteboard.general.setString(cloneUrl, forType: .string)
-                    }) {
-                        Label("Copy Wiki Clone URL", systemImage: "doc.on.doc")
-                            .frame(maxWidth: 300)
+                // READING MODE
+                if let selectedPage = viewModel.selectedPage {
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text(selectedPage.title)
+                                .font(.largeTitle)
+                                .fontWeight(.bold)
+                            
+                            Divider()
+                            
+                            // Rendered Markdown
+                            MarkdownView(markdown: selectedPage.content)
+                                .padding()
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding()
                     }
-                    .buttonStyle(.bordered)
-                    .controlSize(.large)
+                } else {
+                    // No page selected
+                    VStack {
+                        Image(systemName: "doc.text")
+                            .font(.system(size: 64))
+                            .foregroundColor(.secondary)
+                        Text("Select a wiki page")
+                            .font(.title2)
+                            .foregroundColor(.secondary)
+                    }
                 }
             }
-        }
-        .padding()
-    }
-    
-    // MARK: - Wiki Not Available View
-    
-    private func wikiNotAvailableView(repository: Repository) -> some View {
-        VStack(spacing: 30) {
-            Image(systemName: "book.closed")
-                .font(.system(size: 64))
-                .foregroundStyle(.secondary)
             
-            Text("No Wiki Available")
-                .font(.title)
-                .bold()
-            
-            Text("This repository doesn't have a wiki enabled")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            
-            Divider()
-                .frame(maxWidth: 400)
-            
-            VStack(alignment: .leading, spacing: 12) {
-                Text("To enable the wiki:")
-                    .font(.headline)
-                
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("1. Go to repository Settings on GitHub")
-                    Text("2. Check 'Wikis' in the Features section")
-                    Text("3. Create your first wiki page")
+            // EDIT BUTTON - Full width spacebar style
+            if !isEditing && viewModel.selectedPage != nil {
+                Button(action: {
+                    viewModel.startEditing()
+                    withAnimation {
+                        isEditing = true
+                    }
+                }) {
+                    HStack {
+                        Spacer()
+                        Text("Edit")
+                            .font(.headline)
+                        Spacer()
+                    }
+                    .padding()
+                    .background(Color.accentColor)
+                    .foregroundColor(.white)
                 }
-                .font(.body)
-                .foregroundStyle(.secondary)
+                .buttonStyle(.plain)
             }
-            .padding()
-            .background(Color(nsColor: .controlBackgroundColor))
-            .cornerRadius(8)
-            .frame(maxWidth: 500)
-            
-            Button(action: {
-                if let url = URL(string: "https://github.com/\(repository.fullName)/settings") {
-                    NSWorkspace.shared.open(url)
-                }
-            }) {
-                Label("Open Repository Settings", systemImage: "gear")
-                    .frame(maxWidth: 300)
-            }
-            .buttonStyle(.bordered)
-            .controlSize(.large)
         }
-        .padding()
-    }
-    
-    // MARK: - Placeholder
-    
-    private var wikiPlaceholder: some View {
-        ContentUnavailableView(
-            "Select a Repository",
-            systemImage: "book.closed",
-            description: Text("Choose a repository to view its wiki")
-        )
-    }
-    
-    // MARK: - Helper Functions
-    
-    private func loadWikiInfo(for repository: Repository) async {
-        isLoading = true
-        
-        do {
-            wikiInfo = try await wikiService.checkWikiAvailability(for: repository)
-        } catch {
-            print("Error loading wiki info: \(error)")
+        .onChange(of: viewModel.isEditing) { _, newValue in
+            isEditing = newValue
         }
-        
-        isLoading = false
     }
 }
 
-#Preview {
-    WikiViewA(repository: nil, configManager: ConfigManager())
+// Simple Markdown renderer
+struct MarkdownView: View {
+    let markdown: String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            ForEach(parseMarkdown(), id: \.self) { line in
+                renderLine(line)
+            }
+        }
+    }
+    
+    func parseMarkdown() -> [String] {
+        markdown.components(separatedBy: .newlines)
+    }
+    
+    @ViewBuilder
+    func renderLine(_ line: String) -> some View {
+        if line.hasPrefix("# ") {
+            Text(line.dropFirst(2))
+                .font(.title)
+                .fontWeight(.bold)
+        } else if line.hasPrefix("## ") {
+            Text(line.dropFirst(3))
+                .font(.title2)
+                .fontWeight(.semibold)
+        } else if line.hasPrefix("### ") {
+            Text(line.dropFirst(4))
+                .font(.title3)
+                .fontWeight(.semibold)
+        } else if line.contains("![") && line.contains("](") {
+            // Image markdown: ![alt](url)
+            if let url = extractImageURL(from: line) {
+                AsyncImage(url: URL(string: url)) { image in
+                    image
+                        .resizable()
+                        .scaledToFit()
+                } placeholder: {
+                    HStack {
+                        ProgressView()
+                        Text("Loading image...")
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .frame(maxWidth: 600)
+            } else {
+                Text(line)
+            }
+        } else if line.hasPrefix("- ") || line.hasPrefix("* ") {
+            HStack(alignment: .top) {
+                Text("•")
+                Text(String(line.dropFirst(2)))
+            }
+        } else if !line.isEmpty {
+            Text(line)
+        }
+    }
+    
+    func extractImageURL(from line: String) -> String? {
+        // Extract URL from ![alt](url) format
+        guard let startIndex = line.range(of: "](")?.upperBound,
+              let endIndex = line.range(of: ")", range: startIndex..<line.endIndex)?.lowerBound else {
+            return nil
+        }
+        return String(line[startIndex..<endIndex])
+    }
 }
+

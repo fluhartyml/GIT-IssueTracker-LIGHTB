@@ -24,12 +24,6 @@ struct WikiListView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(page.title)
                             .font(.headline)
-                        
-                        if let updated = page.lastUpdated {
-                            Text("Updated \(updated, style: .relative)")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
                     }
                 }
             }
@@ -65,3 +59,4 @@ struct WikiListView: View {
         selectedPage: .constant(nil)
     )
 }
+

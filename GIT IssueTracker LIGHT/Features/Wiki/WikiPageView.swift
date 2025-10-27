@@ -29,19 +29,15 @@ struct WikiPageView: View {
                         Spacer()
                         
                         Button(action: {
-                            if let url = URL(string: page.htmlUrl) {
+                            if let url = URL(string: "https://github.com/placeholder/repo/wiki/\(page.title)") {
+                                #if canImport(AppKit)
                                 NSWorkspace.shared.open(url)
+                                #endif
                             }
                         }) {
                             Label("View on GitHub", systemImage: "safari")
                         }
                         .buttonStyle(.bordered)
-                    }
-                    
-                    if let updated = page.lastUpdated {
-                        Text("Last updated \(updated, style: .relative)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
                     }
                 }
                 .padding(.horizontal)
@@ -81,8 +77,10 @@ struct WikiPageView: View {
                             .foregroundStyle(.secondary)
                         
                         Button(action: {
-                            if let url = URL(string: page.htmlUrl) {
+                            if let url = URL(string: "https://github.com/placeholder/repo/wiki/\(page.title)") {
+                                #if canImport(AppKit)
                                 NSWorkspace.shared.open(url)
+                                #endif
                             }
                         }) {
                             Label("View on GitHub", systemImage: "safari")
@@ -101,7 +99,8 @@ struct WikiPageView: View {
     WikiPageView(
         page: WikiPage(
             title: "Home",
-            htmlUrl: "https://github.com/user/repo/wiki/Home"
+            content: "",
+            sha: nil
         ),
         content: "# Welcome to the Wiki\n\nThis is a sample wiki page."
     )

@@ -2,7 +2,7 @@
 //  WikiViewB.swift
 //  GIT IssueTracker LIGHT
 //
-//  Panel B wiki navigation - repo list or editing tools
+//  Panel B wiki navigation - hierarchical repo/page/asset structure
 //
 
 import SwiftUI
@@ -10,75 +10,36 @@ import SwiftUI
 struct WikiViewB: View {
     @ObservedObject var viewModel: WikiModel
     @Binding var selectedRepo: Repository?
+    @State private var expandedRepos = Set<Int>()
     
     var body: some View {
         VStack(spacing: 0) {
             if viewModel.isEditing {
-                // EDITING MODE - Tools and Assets
                 editingToolbar
             } else {
-                // READING MODE - Repository and page list
                 readingNavigation
             }
         }
     }
     
-    // READING MODE NAVIGATION
     var readingNavigation: some View {
-        VStack(spacing: 0) {
-            // Repository list
-            List(selection: $selectedRepo) {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 4) {
                 ForEach(viewModel.repositories) { repo in
-                    HStack {
-                        Image(systemName: "folder")
-                        Text(repo.name)
-                    }
-                    .tag(repo as Repository?)
+                    RepoDisclosureRow(
+                        repo: repo,
+                        viewModel: viewModel,
+                        selectedRepo: $selectedRepo,
+                        expandedRepos: $expandedRepos
+                    )
                 }
             }
-            .onChange(of: selectedRepo) { _, newRepo in
-                if let repo = newRepo {
-                    Task {
-                        await viewModel.fetchWikiPages(for: repo)
-                    }
-                }
-            }
-            
-            Divider()
-            
-            // Wiki pages list
-            if !viewModel.wikiPages.isEmpty {
-                List(selection: $viewModel.selectedPage) {
-                    ForEach(viewModel.wikiPages) { page in
-                        HStack {
-                            Image(systemName: "doc.text")
-                            Text(page.title)
-                        }
-                        .tag(page as WikiPage?)
-                    }
-                }
-                .frame(height: 200)
-            } else if viewModel.isLoadingWiki {
-                ProgressView("Loading wiki...")
-                    .frame(height: 200)
-            } else if selectedRepo != nil {
-                VStack {
-                    Text("No wiki pages")
-                        .foregroundColor(.secondary)
-                    Button("Create First Page") {
-                        viewModel.createNewPage()
-                    }
-                    .padding()
-                }
-                .frame(height: 200)
-            }
+            .padding(.vertical, 8)
         }
     }
     
-    // EDITING MODE TOOLBAR
     var editingToolbar: some View {
         VStack(spacing: 16) {
-            // Back/Save button
             Button(action: {
                 Task {
                     await viewModel.saveAndClose()
@@ -99,7 +60,6 @@ struct WikiViewB: View {
             
             Divider()
             
-            // Formatting tools
             VStack(alignment: .leading, spacing: 8) {
                 Text("FORMATTING")
                     .font(.caption)
@@ -116,7 +76,6 @@ struct WikiViewB: View {
             
             Divider()
             
-            // Assets from current repo root
             ScrollView {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("ASSETS")
@@ -157,6 +116,173 @@ struct WikiViewB: View {
             
             Spacer()
         }
+    }
+}
+
+// Separate row component to simplify type checking
+struct RepoDisclosureRow: View {
+    let repo: Repository
+    @ObservedObject var viewModel: WikiModel
+    @Binding var selectedRepo: Repository?
+    @Binding var expandedRepos: Set<Int>
+    
+    private var isExpanded: Bool {
+        expandedRepos.contains(repo.id)
+    }
+    
+    var body: some View {
+        DisclosureGroup(
+            isExpanded: Binding(
+                get: { isExpanded },
+                set: { newValue in
+                    if newValue {
+                        expandedRepos.insert(repo.id)
+                        selectedRepo = repo
+                        Task {
+                            await viewModel.fetchWikiPages(for: repo)
+                        }
+                    } else {
+                        expandedRepos.remove(repo.id)
+                    }
+                }
+            )
+        ) {
+            RepoContentView(repo: repo, viewModel: viewModel, selectedRepo: selectedRepo)
+        } label: {
+            HStack {
+                Image(systemName: "folder.fill")
+                    .foregroundColor(.blue)
+                Text(repo.name)
+                    .font(.body)
+                    .fontWeight(.medium)
+            }
+            .padding(.vertical, 6)
+            .padding(.horizontal, 8)
+        }
+        .padding(.horizontal, 4)
+    }
+}
+
+// Repository content view
+struct RepoContentView: View {
+    let repo: Repository
+    @ObservedObject var viewModel: WikiModel
+    let selectedRepo: Repository?
+    
+    private var isCurrentRepo: Bool {
+        selectedRepo?.id == repo.id
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            if viewModel.isLoadingWiki && isCurrentRepo {
+                LoadingView()
+            } else if isCurrentRepo && !viewModel.wikiPages.isEmpty {
+                WikiPagesListView(viewModel: viewModel)
+                
+                if !viewModel.repoAssets.isEmpty {
+                    AssetsListView(viewModel: viewModel)
+                }
+            } else if isCurrentRepo {
+                CreateFirstPageButton(viewModel: viewModel)
+            }
+        }
+    }
+}
+
+// Loading indicator
+struct LoadingView: View {
+    var body: some View {
+        HStack {
+            ProgressView()
+                .scaleEffect(0.7)
+            Text("Loading wiki...")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .padding(.leading, 20)
+        .padding(.vertical, 4)
+    }
+}
+
+// Wiki pages list
+struct WikiPagesListView: View {
+    @ObservedObject var viewModel: WikiModel
+    
+    var body: some View {
+        ForEach(viewModel.wikiPages) { page in
+            Button(action: {
+                viewModel.selectedPage = page
+            }) {
+                HStack {
+                    Image(systemName: "doc.text")
+                        .foregroundColor(.blue)
+                    Text(page.title)
+                        .font(.body)
+                    Spacer()
+                }
+                .padding(.leading, 20)
+                .padding(.vertical, 4)
+                .background(
+                    viewModel.selectedPage?.id == page.id ?
+                    Color.accentColor.opacity(0.2) : Color.clear
+                )
+                .cornerRadius(4)
+            }
+            .buttonStyle(.plain)
+        }
+    }
+}
+
+// Assets list
+struct AssetsListView: View {
+    @ObservedObject var viewModel: WikiModel
+    
+    var body: some View {
+        Group {
+            Divider()
+                .padding(.leading, 20)
+                .padding(.vertical, 4)
+            
+            Text("ASSETS")
+                .font(.caption2)
+                .foregroundColor(.secondary)
+                .padding(.leading, 20)
+                .padding(.top, 4)
+            
+            ForEach(viewModel.repoAssets, id: \.self) { asset in
+                HStack {
+                    Image(systemName: "photo")
+                        .foregroundColor(.green)
+                    Text(asset.name)
+                        .font(.caption)
+                        .lineLimit(1)
+                    Spacer()
+                }
+                .padding(.leading, 20)
+                .padding(.vertical, 2)
+            }
+        }
+    }
+}
+
+// Create first page button
+struct CreateFirstPageButton: View {
+    @ObservedObject var viewModel: WikiModel
+    
+    var body: some View {
+        Button(action: {
+            viewModel.createNewPage()
+        }) {
+            HStack {
+                Image(systemName: "plus.circle")
+                Text("Create First Page")
+                    .font(.caption)
+            }
+            .padding(.leading, 20)
+            .padding(.vertical, 4)
+        }
+        .buttonStyle(.plain)
     }
 }
 

@@ -2,7 +2,7 @@
 //  DebugPanel.swift
 //  GIT IssueTracker Light
 //
-//  Developer debug panel with metrics and status
+//  Developer debug panel with metrics and animated ticker
 //
 
 import SwiftUI
@@ -77,27 +77,9 @@ struct DebugPanel: View {
                 Divider()
                     .frame(height: 12)
                 
-                // RESPONSE TIME
-                HStack(spacing: 4) {
-                    Image(systemName: "speedometer")
-                        .font(.system(size: 10))
-                        .foregroundStyle(.secondary)
-                    if let duration = lastApiCallDuration {
-                        Text(String(format: "%.0fms", duration * 1000))
-                            .font(.system(size: 10, design: .monospaced))
-                            .foregroundStyle(.secondary)
-                    } else {
-                        Text("---ms")
-                            .font(.system(size: 10, design: .monospaced))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                
-                Divider()
-                    .frame(height: 12)
-                
-                // CONTEXT-AWARE DATA COUNTS
-                contextualMetrics
+                // ANIMATED TICKER
+                TickerView(messages: tickerMessages)
+                    .frame(maxWidth: .infinity)
                 
                 Divider()
                     .frame(height: 12)
@@ -118,8 +100,6 @@ struct DebugPanel: View {
                     .help("Click to view error log")
                 }
                 
-                Spacer()
-                
                 // TOGGLE BUTTON
                 Button(action: { showDebugPanel = false }) {
                     Image(systemName: "xmark.circle.fill")
@@ -135,68 +115,60 @@ struct DebugPanel: View {
         }
     }
     
-    // MARK: - Context-Aware Metrics
+    // MARK: - Ticker Messages
     
-    @ViewBuilder
-    private var contextualMetrics: some View {
+    private var tickerMessages: [String] {
+        var messages: [String] = []
+        
+        // Time-based greeting
+        let hour = Calendar.current.component(.hour, from: Date())
+        if hour < 12 {
+            messages.append("Good morning developer")
+        } else if hour < 18 {
+            messages.append("Good afternoon hacker")
+        } else {
+            messages.append("Good evening code wizard")
+        }
+        
+        // Sync status
+        if let lastSync = lastSyncTime {
+            let timeAgoText = timeAgo(from: lastSync)
+            messages.append("Last sync \(timeAgoText.lowercased())")
+        }
+        
+        // Context-aware messages
         switch selectedTab {
         case .repos:
-            HStack(spacing: 4) {
-                Image(systemName: "folder")
-                    .font(.system(size: 10))
-                    .foregroundStyle(.blue)
-                Text("\(repositoryCount)")
-                    .font(.system(size: 10, design: .monospaced))
-                    .foregroundStyle(.secondary)
-                
-                if let repo = selectedRepository {
-                    Image(systemName: "arrow.right")
-                        .font(.system(size: 8))
-                        .foregroundStyle(.secondary)
-                    Text(repo.name.prefix(15))
-                        .font(.system(size: 10, design: .monospaced))
-                        .foregroundStyle(.blue)
-                        .lineLimit(1)
-                }
+            messages.append("Tracking \(repositoryCount) repositories")
+            if let repo = selectedRepository {
+                messages.append("Viewing \(repo.name)")
             }
+            messages.append("\(issueCount) issues across all repos")
             
         case .issues:
-            HStack(spacing: 4) {
-                Image(systemName: "exclamationmark.circle")
-                    .font(.system(size: 10))
-                    .foregroundStyle(.red)
-                Text("\(issueCount)")
-                    .font(.system(size: 10, design: .monospaced))
-                    .foregroundStyle(.secondary)
-                
-                Image(systemName: "folder")
-                    .font(.system(size: 10))
-                    .foregroundStyle(.blue)
-                Text("\(repositoryCount)")
-                    .font(.system(size: 10, design: .monospaced))
-                    .foregroundStyle(.secondary)
-            }
+            messages.append("Monitoring \(issueCount) total issues")
+            messages.append("Across \(repositoryCount) repositories")
             
         case .wiki:
-            HStack(spacing: 4) {
-                Image(systemName: "book.closed")
-                    .font(.system(size: 10))
-                    .foregroundStyle(.green)
-                Text("\(repositoryCount)")
-                    .font(.system(size: 10, design: .monospaced))
-                    .foregroundStyle(.secondary)
-                
-                if let repo = selectedWikiRepository {
-                    Image(systemName: "arrow.right")
-                        .font(.system(size: 8))
-                        .foregroundStyle(.secondary)
-                    Text(repo.name.prefix(15))
-                        .font(.system(size: 10, design: .monospaced))
-                        .foregroundStyle(.green)
-                        .lineLimit(1)
-                }
+            let wikisAvailable = repositoryCount // This would be actual count in real implementation
+            messages.append("\(wikisAvailable) wikis available")
+            if let repo = selectedWikiRepository {
+                messages.append("Exploring \(repo.name) wiki")
             }
         }
+        
+        // API status
+        if let remaining = rateLimitRemaining, let total = rateLimitTotal {
+            let percentage = Int((Double(remaining) / Double(total)) * 100)
+            messages.append("API quota at \(percentage)%")
+        }
+        
+        // Performance
+        if let duration = lastApiCallDuration {
+            messages.append("Response time \(Int(duration * 1000))ms")
+        }
+        
+        return messages
     }
     
     private var rateLimitColor: Color {

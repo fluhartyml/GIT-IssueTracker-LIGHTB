@@ -9,10 +9,18 @@ import SwiftUI
 
 struct WikiView: View {
     let repositories: [Repository]
+    let configManager: ConfigManager
+    
     @State private var selectedRepository: Repository?
-    @State private var wikiService: WikiService?
+    @State private var wikiService: WikiService
     @State private var wikiInfo: WikiInfo?
     @State private var isLoading = false
+    
+    init(repositories: [Repository], configManager: ConfigManager) {
+        self.repositories = repositories
+        self.configManager = configManager
+        _wikiService = State(initialValue: WikiService(configManager: configManager))
+    }
     
     var body: some View {
         NavigationSplitView {
@@ -131,7 +139,7 @@ struct WikiView: View {
             // Action buttons
             VStack(spacing: 12) {
                 Button(action: {
-                    wikiService?.openWikiInBrowser(for: repository)
+                    wikiService.openWikiInBrowser(for: repository)
                 }) {
                     Label("Open Wiki in Browser", systemImage: "safari")
                         .frame(maxWidth: 300)
@@ -219,12 +227,10 @@ struct WikiView: View {
     // MARK: - Helper Functions
     
     private func loadWikiInfo(for repository: Repository) async {
-        guard let service = wikiService else { return }
-        
         isLoading = true
         
         do {
-            wikiInfo = try await service.checkWikiAvailability(for: repository)
+            wikiInfo = try await wikiService.checkWikiAvailability(for: repository)
         } catch {
             print("Error loading wiki info: \(error)")
         }
@@ -234,5 +240,6 @@ struct WikiView: View {
 }
 
 #Preview {
-    WikiView(repositories: [])
+    WikiView(repositories: [], configManager: ConfigManager())
 }
+

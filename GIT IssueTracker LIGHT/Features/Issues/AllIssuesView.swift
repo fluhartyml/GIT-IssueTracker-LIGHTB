@@ -2,7 +2,7 @@
 //  AllIssuesView.swift
 //  GIT IssueTracker LIGHT
 //
-//  Created by Michael Fluharty on 10/28/25.
+//  Created by Michael Fluharty on 10/28/25 at 11:36 AM.
 //
 
 
@@ -22,6 +22,11 @@ struct AllIssuesView: View {
     let isLoading: Bool
     let onIssueSelected: (Issue, Repository) -> Void
     
+    // Break out sorted issues to help compiler
+    private var sortedIssues: [Issue] {
+        allIssues.sorted(by: { $0.createdAt > $1.createdAt }) // NEWER ON TOP
+    }
+    
     var body: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 12) {
@@ -31,7 +36,7 @@ struct AllIssuesView: View {
                     .padding(.horizontal)
                     .padding(.top)
                 
-                ForEach(allIssues.sorted(by: { $0.createdAt > $1.createdAt }), id: \.id) { issue in
+                ForEach(sortedIssues, id: \.id) { issue in
                     Button(action: {
                         if let repo = repositories.first(where: { $0.name == issue.repositoryName }) {
                             onIssueSelected(issue, repo)
@@ -65,7 +70,7 @@ struct AllIssuesView: View {
                                 
                                 HStack {
                                     if issue.comments > 0 {
-                                        Label("\(issue.comments) comments", systemImage: "bubble.left")
+                                        SwiftUI.Label("\(issue.comments) comments", systemImage: "bubble.left")
                                             .font(.caption)
                                     }
                                     Text("Created " + issue.createdAt.formatted(date: .abbreviated, time: .omitted))

@@ -2,7 +2,7 @@
 //  IssueNavigatorView.swift
 //  GIT IssueTracker LIGHT
 //
-//  Created by Michael Fluharty on 10/28/25.
+//  Created by Michael Fluharty on 10/28/25 at 11:34 AM.
 //
 
 
@@ -23,10 +23,13 @@ struct IssueNavigatorView: View {
     let isLoading: Bool
     let onIssueSelected: (Issue, Repository) -> Void
     
+    // Break out sorted issues to help compiler
+    private var sortedIssues: [Issue] {
+        allIssues.sorted(by: { $0.createdAt < $1.createdAt }) // OLDER ON TOP
+    }
+    
     var body: some View {
-        List(allIssues.sorted(by: { $0.createdAt < $1.createdAt }), // OLDER ON TOP
-             id: \.id,
-             selection: $selectedIssue) { issue in
+        List(sortedIssues, id: \.id, selection: $selectedIssue) { issue in
             Button(action: {
                 if let repo = repositories.first(where: { $0.name == issue.repositoryName }) {
                     onIssueSelected(issue, repo)
@@ -48,7 +51,7 @@ struct IssueNavigatorView: View {
                         
                         HStack {
                             if issue.comments > 0 {
-                                Label("\(issue.comments)", systemImage: "bubble.left")
+                                SwiftUI.Label("\(issue.comments)", systemImage: "bubble.left")
                                     .font(.caption2)
                             }
                             Text(issue.createdAt, style: .relative)

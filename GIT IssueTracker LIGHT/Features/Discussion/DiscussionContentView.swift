@@ -29,26 +29,26 @@ struct DiscussionContentView: View {
                             .fontWeight(.bold)
                         Spacer()
                         if discussion.isAnswered {
-                            Label("Answered", systemImage: "checkmark.circle.fill")
-                                .foregroundColor(.green)
+                            SwiftUI.Label("Answered", systemImage: "checkmark.circle.fill")
+                                .foregroundStyle(.green)
                         }
                     }
                     
                     HStack(spacing: 12) {
                         Text("by \(discussion.author)")
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                         Text("•")
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                         Text(discussion.category)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                         Text("•")
-                            .foregroundColor(.secondary)
-                        Label("\(discussion.commentCount)", systemImage: "bubble.left")
+                            .foregroundStyle(.secondary)
+                        SwiftUI.Label("\(discussion.commentCount)", systemImage: "bubble.left")
                             .font(.caption)
-                            .foregroundColor(.secondary)
-                        Label("\(discussion.upvoteCount)", systemImage: "arrow.up")
+                            .foregroundStyle(.secondary)
+                        SwiftUI.Label("\(discussion.upvoteCount)", systemImage: "arrow.up")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                     }
                     
                     Divider()

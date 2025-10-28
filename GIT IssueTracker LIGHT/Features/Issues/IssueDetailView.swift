@@ -47,10 +47,10 @@ struct IssueDetailView: View {
                             .foregroundStyle(.secondary)
                         Spacer()
                         if issue.isClosed {
-                            Label("Closed", systemImage: "checkmark.circle.fill")
+                            SwiftUI.Label("Closed", systemImage: "checkmark.circle.fill")
                                 .foregroundStyle(.green)
                         } else {
-                            Label("Open", systemImage: "exclamationmark.circle.fill")
+                            SwiftUI.Label("Open", systemImage: "exclamationmark.circle.fill")
                                 .foregroundStyle(.red)
                         }
                     }

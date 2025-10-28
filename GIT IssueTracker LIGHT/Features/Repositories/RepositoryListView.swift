@@ -2,7 +2,7 @@
 //  RepositoryListView.swift
 //  GIT IssueTracker LIGHT
 //
-//  Created by Michael Fluharty on 10/28/25.
+//  Created by Michael Fluharty on 10/28/25 at 11:38 AM.
 //
 
 
@@ -23,10 +23,10 @@ struct RepositoryListView: View {
     let onRepositorySelected: (Repository) -> Void
     
     var body: some View {
-        List(repositories, selection: $selectedRepository) { repo in
-            Button(action: {
+        List(repositories, id: \.id, selection: $selectedRepository) { repo in
+            Button {
                 onRepositorySelected(repo)
-            }) {
+            } label: {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
                         Image(systemName: "folder.fill")
@@ -44,11 +44,11 @@ struct RepositoryListView: View {
                     
                     HStack(spacing: 12) {
                         if let language = repo.language {
-                            Label(language, systemImage: "chevron.left.forwardslash.chevron.right")
+                            SwiftUI.Label(language, systemImage: "chevron.left.forwardslash.chevron.right")
                                 .font(.caption2)
                         }
                         if let openIssues = repo.openIssuesCount, openIssues > 0 {
-                            Label("\(openIssues)", systemImage: "exclamationmark.circle.fill")
+                            SwiftUI.Label("\(openIssues)", systemImage: "exclamationmark.circle.fill")
                                 .font(.caption2)
                                 .foregroundStyle(.red)
                         }

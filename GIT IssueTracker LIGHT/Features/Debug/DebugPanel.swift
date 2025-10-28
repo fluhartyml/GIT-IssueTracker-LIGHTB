@@ -2,7 +2,7 @@
 //  DebugPanel.swift
 //  GIT IssueTracker LIGHT
 //
-//  Created by Michael Fluharty on 10/28/25.
+//  Created by Michael Fluharty on 10/28/25 at 11:31 AM.
 //
 
 
@@ -65,7 +65,7 @@ struct DebugPanel: View {
                         Text("\(remaining)/\(total)")
                             .font(.caption)
                             .fontWeight(.medium)
-                            .foregroundStyle(remaining < 500 ? .red : .green)
+                            .foregroundStyle(remaining < 500 ? Color.red : Color.green)
                     }
                 }
                 
@@ -103,7 +103,7 @@ struct DebugPanel: View {
                             .font(.caption)
                             .fontWeight(.medium)
                     }
-                    .foregroundStyle(errorLog.isEmpty ? .secondary : .red)
+                    .foregroundStyle(errorLog.isEmpty ? Color.secondary : Color.red)
                 }
                 .buttonStyle(.plain)
                 .help("View error log")

@@ -2,7 +2,7 @@
 //  RepositoryDetailView.swift
 //  GIT IssueTracker LIGHT
 //
-//  Created by Michael Fluharty on 10/28/25.
+//  Created by Michael Fluharty on 10/28/25 at 11:29 AM.
 //
 
 
@@ -119,10 +119,10 @@ struct RepositoryDetailView: View {
                                 .padding(.horizontal)
                                 .padding(.vertical, 8)
                         } else {
-                            ForEach(repositoryOpenIssues) { issue in
-                                Button(action: {
+                            ForEach(repositoryOpenIssues, id: \.id) { issue in
+                                Button {
                                     onIssueSelected(issue)
-                                }) {
+                                } label: {
                                     HStack(alignment: .top, spacing: 12) {
                                         Circle()
                                             .fill(colorForStatus(issue.statusColor))
@@ -141,7 +141,7 @@ struct RepositoryDetailView: View {
                                             
                                             HStack {
                                                 if issue.comments > 0 {
-                                                    Label("\(issue.comments)", systemImage: "bubble.left")
+                                                    SwiftUI.Label("\(issue.comments)", systemImage: "bubble.left")
                                                         .font(.caption2)
                                                 }
                                                 Text(issue.createdAt, style: .relative)

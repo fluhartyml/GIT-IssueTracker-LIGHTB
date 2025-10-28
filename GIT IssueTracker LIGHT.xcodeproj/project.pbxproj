@@ -29,9 +29,22 @@
 		C0E805482EAE742000190304 /* GIT IssueTracker LIGHTUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "GIT IssueTracker LIGHTUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		C0B895112EB10B9A0028D051 /* Exceptions for "GIT IssueTracker LIGHT" folder in "GIT IssueTracker LIGHT" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				App/GITIssueTracker_DeveloperNotes.swift,
+			);
+			target = C0E805302EAE741F00190304 /* GIT IssueTracker LIGHT */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		C0E805332EAE741F00190304 /* GIT IssueTracker LIGHT */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				C0B895112EB10B9A0028D051 /* Exceptions for "GIT IssueTracker LIGHT" folder in "GIT IssueTracker LIGHT" target */,
+			);
 			path = "GIT IssueTracker LIGHT";
 			sourceTree = "<group>";
 		};
@@ -175,6 +188,7 @@
 				TargetAttributes = {
 					C0E805302EAE741F00190304 = {
 						CreatedOnToolsVersion = 26.0;
+						LastSwiftMigration = 2600;
 					};
 					C0E8053D2EAE742000190304 = {
 						CreatedOnToolsVersion = 26.0;
@@ -390,6 +404,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 3X3F6UJ44H;
@@ -432,6 +447,7 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
@@ -444,6 +460,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 3X3F6UJ44H;

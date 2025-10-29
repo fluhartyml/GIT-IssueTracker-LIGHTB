@@ -32,18 +32,16 @@ struct ContentView: View {
     var body: some View {
         VStack(spacing: 0) {
             NavigationSplitView {
-                VStack(spacing: 0) {
-                    // Feature Buttons Grid - ANCHORED AT TOP
-                    FeatureButtonGrid(selectedFeature: $selectedFeature)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                    
-                    Divider()
-                    
-                    // Dynamic Content - fills remaining space
-                    featureContent
-                        .frame(maxHeight: .infinity, alignment: .top)
-                }
+                NavBView(
+                    selectedFeature: $selectedFeature,
+                    selectedRepository: $selectedRepository,
+                    repositories: repositories,
+                    allIssues: allIssues,
+                    isLoading: isLoading,
+                    onRepositorySelected: { repo in
+                        selectedRepository = repo
+                    }
+                )
                 .navigationTitle("GIT IssueTracker LIGHT")
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
@@ -71,7 +69,14 @@ struct ContentView: View {
                     }
                 }
             } detail: {
-                detailContent
+                DetailAView(
+                    selectedRepository: selectedRepository,
+                    allIssues: $allIssues,
+                    gitHubService: gitHubService,
+                    onIssuesCreated: {
+                        Task { await loadIssues() }
+                    }
+                )
             }
             
             // Debug Panel at bottom
@@ -84,64 +89,6 @@ struct ContentView: View {
         }
         .task {
             await loadRepositories()
-        }
-    }
-    
-    // MARK: - Feature Content (Panel B)
-    
-    @ViewBuilder
-    private var featureContent: some View {
-        switch selectedFeature {
-        case .repositories:
-            RepositoryListView(
-                repositories: repositories,
-                selectedRepository: $selectedRepository,
-                isLoading: isLoading,
-                onRepositorySelected: { repo in
-                    selectedRepository = repo
-                }
-            )
-        case .issues:
-            IssueNavigatorView(
-                allIssues: allIssues,
-                repositories: repositories,
-                selectedIssue: .constant(nil),
-                isLoading: isLoading,
-                onIssueSelected: { _, _ in }
-            )
-        case .pullRequests, .commits, .branches, .discussions, .projects, .releases, .stats, .actions:
-            VStack(spacing: 0) {
-                ContentUnavailableView(
-                    "Coming Soon",
-                    systemImage: "hammer",
-                    description: Text("This feature is under development")
-                )
-                .padding(.top, 40)
-                Spacer()
-            }
-        }
-    }
-    
-    // MARK: - Detail Content (Panel A)
-    
-    @ViewBuilder
-    private var detailContent: some View {
-        if let repository = selectedRepository {
-            RepositoryDetailView(
-                repository: repository,
-                allIssues: $allIssues,
-                gitHubService: gitHubService,
-                onIssuesCreated: {
-                    Task { await loadIssues() }
-                },
-                onIssueSelected: { _ in }
-            )
-        } else {
-            ContentUnavailableView(
-                "Select a Repository",
-                systemImage: "folder",
-                description: Text("Choose a repository from the sidebar to view its details")
-            )
         }
     }
     
@@ -185,155 +132,6 @@ struct ContentView: View {
             debugState.addMessage("❌ Failed to load issues: \(error.localizedDescription)")
             print("❌ Failed to load issues: \(error)")
         }
-    }
-}
-
-// MARK: - Feature Button Grid
-
-struct FeatureButtonGrid: View {
-    @Binding var selectedFeature: ContentView.Feature
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            // CODE Section
-            VStack(alignment: .leading, spacing: 6) {
-                Text("CODE")
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.secondary)
-                
-                HStack(spacing: 8) {
-                    FeatureButton(
-                        icon: "folder",
-                        title: "Repositories",
-                        isSelected: selectedFeature == .repositories
-                    ) {
-                        selectedFeature = .repositories
-                    }
-                    
-                    FeatureButton(
-                        icon: "arrow.triangle.pull",
-                        title: "Pull Requests",
-                        isSelected: selectedFeature == .pullRequests
-                    ) {
-                        selectedFeature = .pullRequests
-                    }
-                }
-                
-                HStack(spacing: 8) {
-                    FeatureButton(
-                        icon: "doc.text",
-                        title: "Commits",
-                        isSelected: selectedFeature == .commits
-                    ) {
-                        selectedFeature = .commits
-                    }
-                    
-                    FeatureButton(
-                        icon: "arrow.triangle.branch",
-                        title: "Branches",
-                        isSelected: selectedFeature == .branches
-                    ) {
-                        selectedFeature = .branches
-                    }
-                }
-            }
-            
-            // MANAGEMENT Section
-            VStack(alignment: .leading, spacing: 6) {
-                Text("MANAGEMENT")
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.secondary)
-                
-                HStack(spacing: 8) {
-                    FeatureButton(
-                        icon: "exclamationmark.circle",
-                        title: "Issues",
-                        isSelected: selectedFeature == .issues
-                    ) {
-                        selectedFeature = .issues
-                    }
-                    
-                    FeatureButton(
-                        icon: "bubble.left.and.bubble.right",
-                        title: "Discussions",
-                        isSelected: selectedFeature == .discussions
-                    ) {
-                        selectedFeature = .discussions
-                    }
-                }
-                
-                HStack(spacing: 8) {
-                    FeatureButton(
-                        icon: "shippingbox",
-                        title: "Projects",
-                        isSelected: selectedFeature == .projects
-                    ) {
-                        selectedFeature = .projects
-                    }
-                    
-                    FeatureButton(
-                        icon: "tag",
-                        title: "Releases",
-                        isSelected: selectedFeature == .releases
-                    ) {
-                        selectedFeature = .releases
-                    }
-                }
-            }
-            
-            // INSIGHTS Section
-            VStack(alignment: .leading, spacing: 6) {
-                Text("INSIGHTS")
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.secondary)
-                
-                HStack(spacing: 8) {
-                    FeatureButton(
-                        icon: "chart.bar",
-                        title: "Stats",
-                        isSelected: selectedFeature == .stats
-                    ) {
-                        selectedFeature = .stats
-                    }
-                    
-                    FeatureButton(
-                        icon: "bolt",
-                        title: "Actions",
-                        isSelected: selectedFeature == .actions
-                    ) {
-                        selectedFeature = .actions
-                    }
-                }
-            }
-        }
-    }
-}
-
-struct FeatureButton: View {
-    let icon: String
-    let title: String
-    let isSelected: Bool
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 6) {
-                Image(systemName: icon)
-                    .font(.system(size: 14))
-                Text(title)
-                    .font(.system(size: 12))
-                Spacer()
-            }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(isSelected ? Color.accentColor.opacity(0.2) : Color.clear)
-            .cornerRadius(8)
-        }
-        .buttonStyle(.plain)
-        .contentShape(Rectangle())
     }
 }
 

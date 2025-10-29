@@ -1,4 +1,12 @@
 //
+//  DebugState.swift
+//  GIT IssueTracker LIGHT
+//
+//  Created by Michael Fluharty on 10/28/25.
+//
+
+
+//
 //  DebugState[macOS].swift
 //  GIT IssueTracker LIGHT
 //
